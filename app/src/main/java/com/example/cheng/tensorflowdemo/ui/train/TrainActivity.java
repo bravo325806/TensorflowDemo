@@ -43,6 +43,7 @@ public class TrainActivity extends AppCompatActivity implements View.OnClickList
     private Button recognizeButton;
     private Button caremaButton;
     private Button chooseImageButton;
+    private String imagePath;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -102,12 +103,13 @@ public class TrainActivity extends AppCompatActivity implements View.OnClickList
         if (requestCode == CHOOSE_IMAGE && data != null) {
             if (data.getData() != null) {
                 Uri selectedImageUri = data.getData();
-                String selectedImagePath = FileUtils.getPath(TrainActivity.this, selectedImageUri);
-                Glide.with(TrainActivity.this).load(selectedImagePath).into(imageView);
+                imagePath = FileUtils.getPath(TrainActivity.this, selectedImageUri);
+                Glide.with(TrainActivity.this).load(imagePath).into(imageView);
             }
         }else if (requestCode == CAMERA_REQUEST&&data!=null) {
             if (data.getStringExtra("image") != null) {
-                Glide.with(TrainActivity.this).load(data.getStringExtra("image")).into(imageView);
+                imagePath=data.getStringExtra("image");
+                Glide.with(TrainActivity.this).load(imagePath).into(imageView);
             }
         }
     }

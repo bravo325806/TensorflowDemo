@@ -17,10 +17,14 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.example.cheng.tensorflowdemo.R;
+import com.example.cheng.tensorflowdemo.data.RemoteReponsitory;
 import com.example.cheng.tensorflowdemo.ui.camera.CameraActivity;
 import com.example.cheng.tensorflowdemo.ui.train.TrainActivity;
 import com.example.cheng.tensorflowdemo.utils.FileUtils;
+import com.example.cheng.tensorflowdemo.utils.ProgressDialog;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 
 /**
@@ -31,6 +35,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private final int CHOOSE_IMAGE = 3;
     public static final int CAMERA_REQUEST = 4;
     private final int REQUEST_CONTACTS = 11;
+    private final String id = "story";
     private Button switchButton;
     private Button updateModelButton;
     private RecyclerView imageList;
@@ -40,6 +45,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button uploadButton;
     private ArrayList<String> arrayPath;
     private ImageAdapter imageAdapter;
+    private MainContract.Presenter myPresenter;
+    private ProgressDialog progressDialog;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -63,6 +70,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         uploadButton.setOnClickListener(this);
         arrayPath = new ArrayList<>();
         setRecycleView();
+        myPresenter = new MainPresenter(this, new RemoteReponsitory(this));
+        progressDialog = new ProgressDialog();
     }
 
     private void setRecycleView() {
@@ -79,7 +88,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             startActivity(intent);
             finish();
         } else if (view.getId() == updateModelButton.getId()) {
-
+            Bundle bundle = new Bundle();
+            bundle.putString("text", "下載中...");
+            progressDialog.setArguments(bundle);
+            progressDialog.show(getFragmentManager(),"dialog");
+            myPresenter.getModel();
         } else if (view.getId() == chooseImageButton.getId()) {
             int permission = ActivityCompat.checkSelfPermission(this,
                     Manifest.permission.READ_EXTERNAL_STORAGE);
@@ -102,14 +115,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             intent.putExtra("from", MainActivity.class.getName());
             startActivityForResult(intent, CAMERA_REQUEST);
         } else if (view.getId() == uploadButton.getId()) {
-
+            Bundle bundle = new Bundle();
+            bundle.putString("text", "上傳中...");
+            progressDialog.setArguments(bundle);
+            progressDialog.show(getFragmentManager(),"dialog");
+            myPresenter.upload(labelEditText.getText().toString(), arrayPath, id);
         }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == CHOOSE_IMAGE&&data!=null) {
+        if (requestCode == CHOOSE_IMAGE && data != null) {
             if (data.getData() != null) {
                 Uri selectedImageUri = data.getData();
                 String selectedImagePath = FileUtils.getPath(MainActivity.this, selectedImageUri);
@@ -126,7 +143,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 }
             }
-        } else if (requestCode == CAMERA_REQUEST&&data!=null) {
+        } else if (requestCode == CAMERA_REQUEST && data != null) {
             if (data.getStringExtra("image") != null) {
                 arrayPath.add(data.getStringExtra("image"));
                 imageAdapter.notifyDataSetChanged();
@@ -138,5 +155,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void itemLongClick(View view) {
         arrayPath.remove((int) view.getTag(R.id.image_tag));
         imageAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void uploadFinish() {
+        progressDialog.dismiss();
+        arrayPath.clear();
+        imageAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void modelUpdateFinish() {
+        progressDialog.dismiss();
     }
 }
