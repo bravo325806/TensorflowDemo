@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -27,15 +28,17 @@ import org.tensorflow.contrib.android.TensorFlowInferenceInterface;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 
-public class TrainActivity extends AppCompatActivity implements View.OnClickListener {
+public class TrainActivity extends AppCompatActivity implements View.OnClickListener,TrainContract.View{
     private final int CHOOSE_IMAGE = 103;
     public static final int CAMERA_REQUEST = 104;
     private final int REQUEST_CONTACTS = 111;
     private static final String TAG = TrainActivity.class.getName();
     private final String MODEL_FILE = "file:///android_asset/inception_v3_2016_08_28_frozen.pb";
-    private final String INPUT_NODE = "input";
-    private final String OUTPUT_NODE = "InceptionV3/Predictions/Reshape_1";
+    private final String INPUT_NODE = "Mul";
+    private final String OUTPUT_NODE = "final_result";
     private final int INPUT_SIZE = 299;
 
     private ImageView imageView;
@@ -43,7 +46,8 @@ public class TrainActivity extends AppCompatActivity implements View.OnClickList
     private Button recognizeButton;
     private Button caremaButton;
     private Button chooseImageButton;
-    private String imagePath;
+    private String imagePath="";
+    private TrainContract.Presenter presenter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,6 +68,7 @@ public class TrainActivity extends AppCompatActivity implements View.OnClickList
         recognizeButton.setOnClickListener(this);
         caremaButton.setOnClickListener(this);
         chooseImageButton.setOnClickListener(this);
+        presenter=new TrainPresenter(this,new TensorflowMobile(this,MODEL_FILE,INPUT_NODE,OUTPUT_NODE,INPUT_SIZE));
     }
 
     @Override
@@ -73,7 +78,9 @@ public class TrainActivity extends AppCompatActivity implements View.OnClickList
             startActivity(intent);
             finish();
         } else if (view.getId() == recognizeButton.getId()) {
-
+            if(!imageView.equals("")){
+                presenter.recognize(imagePath);
+            }
         } else if (view.getId() == caremaButton.getId()) {
             Intent intent = new Intent(TrainActivity.this, CameraActivity.class);
             intent.putExtra("from", TrainActivity.class.getName());
@@ -111,6 +118,14 @@ public class TrainActivity extends AppCompatActivity implements View.OnClickList
                 imagePath=data.getStringExtra("image");
                 Glide.with(TrainActivity.this).load(imagePath).into(imageView);
             }
+        }
+    }
+
+    @Override
+    public void getData(ArrayList<HashMap> result) {
+        for (int i=0;i<result.size();i++){
+            Log.e(TrainActivity.class.getName()
+                    ,"label:"+result.get(i).get("label").toString()+" output:"+result.get(i).get("output"));
         }
     }
 }
