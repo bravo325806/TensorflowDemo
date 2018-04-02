@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.cheng.tensorflowdemo.ui.train.TrainActivity">
+    tools:context="com.example.cheng.tensorflowdemo.ui.recognition.TrainActivity">
 
     <Button
         android:id="@+id/switch_button"

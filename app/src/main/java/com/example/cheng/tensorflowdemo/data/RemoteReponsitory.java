@@ -6,6 +6,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -18,12 +19,16 @@ import com.example.cheng.tensorflowdemo.utils.InputStreamVolleyRequest;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.ByteArrayBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.json.JSONException;
 
 import java.io.BufferedReader;
@@ -76,9 +81,10 @@ public class RemoteReponsitory {
             @Override
             public void run() {
                 try {
-//
-                    HttpClient httpClient = new DefaultHttpClient();
-                    HttpPost postRequest = new HttpPost("http://10.21.20.233:5000/upload");
+                    HttpParams httpParams = new BasicHttpParams();
+                    HttpConnectionParams.setConnectionTimeout(httpParams, 20000);
+                    HttpClient httpClient = new DefaultHttpClient(httpParams);
+                    HttpPost postRequest = new HttpPost("http://10.21.20.38:5000/upload");
                     MultipartEntity reqEntity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
                     try {
                         for (int i=0;i<file.size();i++){
@@ -95,6 +101,7 @@ public class RemoteReponsitory {
                     } catch (Exception e) {
                     }
                     postRequest.setEntity(reqEntity);
+
                     HttpResponse response = httpClient.execute(postRequest);
                     BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
                     String sResponse;
@@ -110,7 +117,7 @@ public class RemoteReponsitory {
         }).start();
     }
     public void setTrainModelRequset(final String name){
-        String url = "http://10.21.20.233:5000/train";
+        String url = "http://10.21.20.38:5000/train";
         StringRequest stringRequest=new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -123,7 +130,12 @@ public class RemoteReponsitory {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-
+                try {
+                    uploadFile.onError();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                Log.e("請求錯誤：",error.toString());
             }
         })
         {
@@ -134,6 +146,10 @@ public class RemoteReponsitory {
                 return map;
             }
         };
+        stringRequest.setRetryPolicy(new DefaultRetryPolicy(
+                20000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         queue.add(stringRequest);
     }
     public void setGetpbModelFinish(RemoteSource.getpbModel getpbModel) {
@@ -141,7 +157,7 @@ public class RemoteReponsitory {
     }
 
     public void setGetpbModelRequset() {
-        String url = "http://10.21.20.233:5000/file";
+        String url = "http://10.21.20.38:5000/file";
         InputStreamVolleyRequest postRequest = new InputStreamVolleyRequest(Request.Method.GET, url,
                 new Response.Listener<byte[]>() {
                     @Override
@@ -163,10 +179,20 @@ public class RemoteReponsitory {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
+                        try {
+                            getpbModel.onError();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        Log.e("請求錯誤：",error.toString());
 //                        Toast.makeText(context, "帳號或密碼錯誤", Toast.LENGTH_SHORT).show();
                     }
                 },null
         );
+        postRequest.setRetryPolicy(new DefaultRetryPolicy(
+                20000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         queue.add(postRequest);
     }
     public void setGetpbtxtFinish(RemoteSource.getpbtxt getpbtxt) {
@@ -174,7 +200,7 @@ public class RemoteReponsitory {
     }
 
     public void setGetpbtxtRequset() {
-        String url = "http://10.21.20.233:5000/file1";
+        String url = "http://10.21.20.38:5000/file1";
         InputStreamVolleyRequest postRequest = new InputStreamVolleyRequest(Request.Method.GET, url,
                 new Response.Listener<byte[]>() {
                     @Override
@@ -196,10 +222,20 @@ public class RemoteReponsitory {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
+                        try {
+                            getpbtxt.onError();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        Log.e("請求錯誤：",error.toString());
 //                        Toast.makeText(context, "帳號或密碼錯誤", Toast.LENGTH_SHORT).show();
                     }
                 },null
         );
+        postRequest.setRetryPolicy(new DefaultRetryPolicy(
+                20000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         queue.add(postRequest);
     }
 }

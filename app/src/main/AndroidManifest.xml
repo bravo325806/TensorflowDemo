@@ -20,7 +20,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.train.TrainActivity"></activity>
+        <activity android:name=".ui.recognition.RecognitionActivity"></activity>
         <activity android:name=".ui.camera.CameraActivity"></activity>
     </application>
 

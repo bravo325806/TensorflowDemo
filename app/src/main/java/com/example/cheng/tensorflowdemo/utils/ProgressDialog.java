@@ -28,6 +28,7 @@ public class ProgressDialog extends DialogFragment{
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        this.setCancelable(false);
         if(getArguments().getString("text")!=null){
             textView.setText(getArguments().getString("text"));
         }

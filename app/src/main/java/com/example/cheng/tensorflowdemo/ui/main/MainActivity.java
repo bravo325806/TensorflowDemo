@@ -11,20 +11,18 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.example.cheng.tensorflowdemo.R;
 import com.example.cheng.tensorflowdemo.data.RemoteReponsitory;
 import com.example.cheng.tensorflowdemo.ui.camera.CameraActivity;
-import com.example.cheng.tensorflowdemo.ui.train.TrainActivity;
+import com.example.cheng.tensorflowdemo.ui.recognition.RecognitionActivity;
 import com.example.cheng.tensorflowdemo.utils.FileUtils;
 import com.example.cheng.tensorflowdemo.utils.ProgressDialog;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.util.ArrayList;
 
 /**
@@ -47,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ImageAdapter imageAdapter;
     private MainContract.Presenter myPresenter;
     private ProgressDialog progressDialog;
-
+    private Toast toast;
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View view) {
         if (view.getId() == switchButton.getId()) {
-            Intent intent = new Intent(MainActivity.this, TrainActivity.class);
+            Intent intent = new Intent(MainActivity.this, RecognitionActivity.class);
             startActivity(intent);
             finish();
         } else if (view.getId() == updateModelButton.getId()) {
@@ -115,11 +113,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             intent.putExtra("from", MainActivity.class.getName());
             startActivityForResult(intent, CAMERA_REQUEST);
         } else if (view.getId() == uploadButton.getId()) {
-            Bundle bundle = new Bundle();
-            bundle.putString("text", "上傳中...");
-            progressDialog.setArguments(bundle);
-            progressDialog.show(getFragmentManager(),"dialog");
-            myPresenter.upload(labelEditText.getText().toString(), arrayPath, id);
+            if(!labelEditText.getText().toString().equals("")){
+                Bundle bundle = new Bundle();
+                bundle.putString("text", "上傳中...");
+                progressDialog.setArguments(bundle);
+                progressDialog.show(getFragmentManager(),"dialog");
+                myPresenter.upload(labelEditText.getText().toString(), arrayPath, id);
+            }
         }
     }
 
@@ -165,7 +165,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
+    public void uploadError() {
+        progressDialog.dismiss();
+        showToast("上傳失敗");
+    }
+
+    @Override
     public void modelUpdateFinish() {
         progressDialog.dismiss();
+    }
+
+    @Override
+    public void modelUpdateError() {
+        progressDialog.dismiss();
+        showToast("下載失敗");
+    }
+    private void showToast(String msg){
+        if(toast==null){
+            toast=Toast.makeText(MainActivity.this,msg,Toast.LENGTH_SHORT);
+        }else{
+            toast.setText(msg);
+        }
+        toast.show();
     }
 }

@@ -12,7 +12,9 @@ public interface MainContract {
     interface View{
         void itemLongClick(android.view.View view);
         void uploadFinish();
+        void uploadError();
         void modelUpdateFinish();
+        void modelUpdateError();
     }
     interface Presenter{
         void getModel();

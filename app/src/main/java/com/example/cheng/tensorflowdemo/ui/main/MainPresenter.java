@@ -42,6 +42,11 @@ public class MainPresenter implements MainContract.Presenter {
                 myView.uploadFinish();
             }
         }
+
+        @Override
+        public void onError() throws Exception {
+                myView.uploadError();
+        }
     };
     RemoteSource.getpbModel getpbModel = new RemoteSource.getpbModel() {
         @Override
@@ -50,12 +55,22 @@ public class MainPresenter implements MainContract.Presenter {
             updateModelFinish();
 
         }
+
+        @Override
+        public void onError() throws Exception {
+            myView.modelUpdateError();
+        }
     };
     RemoteSource.getpbtxt getpbtxt = new RemoteSource.getpbtxt() {
         @Override
         public void onFinish() throws Exception {
             count++;
             updateModelFinish();
+        }
+
+        @Override
+        public void onError() throws Exception {
+            myView.modelUpdateError();
         }
     };
     private void updateModelFinish(){

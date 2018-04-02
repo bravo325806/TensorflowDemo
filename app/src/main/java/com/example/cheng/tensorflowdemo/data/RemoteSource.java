@@ -9,11 +9,14 @@ import org.json.JSONException;
 public interface RemoteSource {
     interface getpbModel{
         void onFinish() throws Exception;
+        void onError() throws Exception;
     }
     interface getpbtxt{
         void onFinish() throws Exception;
+        void onError() throws Exception;
     }
     interface uploadFile{
         void onFinish(String response) throws Exception;
+        void onError() throws Exception;
     }
 }
