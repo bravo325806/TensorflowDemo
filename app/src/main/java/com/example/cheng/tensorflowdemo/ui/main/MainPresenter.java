@@ -22,6 +22,12 @@ public class MainPresenter implements MainContract.Presenter {
     }
 
     @Override
+    public void getVersion() {
+        remoteReponsitory.setGetTrainVersionRequset();
+        remoteReponsitory.setGetTrainVersionFinish(getVersion);
+    }
+
+    @Override
     public void getModel() {
         remoteReponsitory.setGetpbModelRequset();
         remoteReponsitory.setGetpbModelFinish(getpbModel);
@@ -34,12 +40,25 @@ public class MainPresenter implements MainContract.Presenter {
         remoteReponsitory.setUploadFileRequset(tag, file, id);
         remoteReponsitory.setUploadFileFinish(uploadFile);
     }
+    RemoteSource.getVersion getVersion= new RemoteSource.getVersion() {
+        @Override
+        public void onFinish(String response) throws Exception {
+            myView.getVersionFinish(response);
+        }
+
+        @Override
+        public void onError() throws Exception {
+
+        }
+    };
 
     RemoteSource.uploadFile uploadFile = new RemoteSource.uploadFile() {
         @Override
         public void onFinish(String response) throws Exception {
             if (response.equals("0")) {
                 myView.uploadFinish();
+            }else{
+                myView.uploadError();
             }
         }
 

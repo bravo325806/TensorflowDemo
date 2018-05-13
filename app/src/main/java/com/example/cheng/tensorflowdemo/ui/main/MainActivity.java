@@ -3,6 +3,7 @@ package com.example.cheng.tensorflowdemo.ui.main;
 import android.Manifest;
 import android.content.ClipData;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -46,6 +47,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private MainContract.Presenter myPresenter;
     private ProgressDialog progressDialog;
     private Toast toast;
+    private DownloadDialog downloadDialog;
+    private String version;
+    private SharedPreferences preferences;
+    private SharedPreferences.Editor editor;
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,6 +75,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setRecycleView();
         myPresenter = new MainPresenter(this, new RemoteReponsitory(this));
         progressDialog = new ProgressDialog();
+        downloadDialog = new DownloadDialog();
+        preferences=getSharedPreferences("demo",0);
+        editor=preferences.edit();
     }
 
     private void setRecycleView() {
@@ -86,11 +94,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             startActivity(intent);
             finish();
         } else if (view.getId() == updateModelButton.getId()) {
-            Bundle bundle = new Bundle();
-            bundle.putString("text", "下載中...");
-            progressDialog.setArguments(bundle);
-            progressDialog.show(getFragmentManager(),"dialog");
-            myPresenter.getModel();
+            myPresenter.getVersion();
         } else if (view.getId() == chooseImageButton.getId()) {
             int permission = ActivityCompat.checkSelfPermission(this,
                     Manifest.permission.READ_EXTERNAL_STORAGE);
@@ -152,6 +156,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
+    public void getVersionFinish(String version) {
+        this.version=version;
+        Bundle bundle = new Bundle();
+        bundle.putString("version",version);
+        downloadDialog.setArguments(bundle);
+        downloadDialog.show(getFragmentManager(),DownloadDialog.class.getName());
+        downloadDialog.setOnClickListener(onClick);
+    }
+
+    @Override
     public void itemLongClick(View view) {
         arrayPath.remove((int) view.getTag(R.id.image_tag));
         imageAdapter.notifyDataSetChanged();
@@ -172,6 +186,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void modelUpdateFinish() {
+        editor.putString("version",version);
+        editor.commit();
         progressDialog.dismiss();
     }
 
@@ -180,6 +196,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         progressDialog.dismiss();
         showToast("下載失敗");
     }
+    private DownloadDialog.onClick onClick=new DownloadDialog.onClick() {
+        @Override
+        public void onClick(View view) {
+            downloadDialog.dismiss();
+            Bundle bundle = new Bundle();
+            bundle.putString("text", "下載中...");
+            progressDialog.setArguments(bundle);
+            progressDialog.show(getFragmentManager(),ProgressDialog.class.getName());
+            myPresenter.getModel();
+        }
+    };
     private void showToast(String msg){
         if(toast==null){
             toast=Toast.makeText(MainActivity.this,msg,Toast.LENGTH_SHORT);

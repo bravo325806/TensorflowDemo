@@ -10,6 +10,7 @@ import java.util.ArrayList;
 
 public interface MainContract {
     interface View{
+        void getVersionFinish(String version);
         void itemLongClick(android.view.View view);
         void uploadFinish();
         void uploadError();
@@ -17,6 +18,7 @@ public interface MainContract {
         void modelUpdateError();
     }
     interface Presenter{
+        void getVersion();
         void getModel();
         void upload(String tag, ArrayList<String> file,String id);
     }

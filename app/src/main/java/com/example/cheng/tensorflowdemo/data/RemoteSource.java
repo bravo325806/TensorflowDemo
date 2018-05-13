@@ -19,4 +19,8 @@ public interface RemoteSource {
         void onFinish(String response) throws Exception;
         void onError() throws Exception;
     }
+    interface getVersion{
+        void onFinish(String response) throws Exception;
+        void onError() throws Exception;
+    }
 }

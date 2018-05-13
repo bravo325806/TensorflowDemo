@@ -51,6 +51,7 @@ public class RemoteReponsitory {
     private RemoteSource.getpbModel getpbModel;
     private RemoteSource.uploadFile uploadFile;
     private RemoteSource.getpbtxt getpbtxt;
+    private RemoteSource.getVersion getVersion;
     public RemoteReponsitory(Context context){
         this.context=context;
         queue = SingleRequestQueue.getQueue(context);
@@ -109,6 +110,7 @@ public class RemoteReponsitory {
                     while ((sResponse = reader.readLine()) != null) {
                         s = s.append(sResponse);
                     }
+                    uploadFile.onFinish(s.toString());
                 }catch(Exception e){
                     e.getStackTrace();
                 }
@@ -122,7 +124,7 @@ public class RemoteReponsitory {
             @Override
             public void onResponse(String response) {
                 try {
-                    uploadFile.onFinish(response);
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -237,5 +239,36 @@ public class RemoteReponsitory {
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         queue.add(postRequest);
+    }
+    public void setGetTrainVersionFinish(RemoteSource.getVersion getVersion){
+        this.getVersion=getVersion;
+    }
+    public void setGetTrainVersionRequset(){
+        String url = "10.21.20.11:5001/version";
+        StringRequest stringRequest=new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    getVersion.onFinish(response);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                try {
+                    getVersion.onError();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                Log.e("請求錯誤：",error.toString());
+            }
+        });
+        stringRequest.setRetryPolicy(new DefaultRetryPolicy(
+                20000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        queue.add(stringRequest);
     }
 }
