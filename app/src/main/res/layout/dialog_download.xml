@@ -42,7 +42,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="20dp"
                 android:id="@+id/lastest_version"
-                android:text="1"/>
+                android:text="0"/>
         </LinearLayout>
         <LinearLayout
             android:layout_width="wrap_content"
@@ -51,15 +51,19 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="10dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
                 android:text="立即更新"
-                android:id="@+id/cancel_button"/>
+                android:id="@+id/update_button"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="10dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
                 android:text="取消"
-                android:id="@+id/update_button"/>
+                android:id="@+id/cancel_button"/>
         </LinearLayout>
     </LinearLayout>
 </RelativeLayout>

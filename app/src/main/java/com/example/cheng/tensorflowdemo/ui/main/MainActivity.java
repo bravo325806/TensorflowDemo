@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String version;
     private SharedPreferences preferences;
     private SharedPreferences.Editor editor;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,11 +74,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         uploadButton.setOnClickListener(this);
         arrayPath = new ArrayList<>();
         setRecycleView();
-        myPresenter = new MainPresenter(this, new RemoteReponsitory(this));
+        myPresenter = new MainPresenter(this, new RemoteReponsitory(getApplicationContext()));
         progressDialog = new ProgressDialog();
         downloadDialog = new DownloadDialog();
-        preferences=getSharedPreferences("demo",0);
-        editor=preferences.edit();
+        preferences = getSharedPreferences("demo", 0);
+        editor = preferences.edit();
     }
 
     private void setRecycleView() {
@@ -117,11 +118,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             intent.putExtra("from", MainActivity.class.getName());
             startActivityForResult(intent, CAMERA_REQUEST);
         } else if (view.getId() == uploadButton.getId()) {
-            if(!labelEditText.getText().toString().equals("")){
+            if (!labelEditText.getText().toString().equals("")) {
                 Bundle bundle = new Bundle();
                 bundle.putString("text", "上傳中...");
                 progressDialog.setArguments(bundle);
-                progressDialog.show(getFragmentManager(),"dialog");
+                progressDialog.show(getFragmentManager(), "dialog");
                 myPresenter.upload(labelEditText.getText().toString(), arrayPath, id);
             }
         }
@@ -131,20 +132,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == CHOOSE_IMAGE && data != null) {
-            if (data.getData() != null) {
-                Uri selectedImageUri = data.getData();
-                String selectedImagePath = FileUtils.getPath(MainActivity.this, selectedImageUri);
-                arrayPath.add(selectedImagePath);
-                imageAdapter.notifyDataSetChanged();
+            if (data.getClipData() != null) {
+                ClipData clipData = data.getClipData();
+                for (int i = 0; i < clipData.getItemCount(); i++) {
+                    Uri uri = clipData.getItemAt(i).getUri();
+                    String selectedImagePath = FileUtils.getPath(MainActivity.this, uri);
+                    arrayPath.add(selectedImagePath);
+                    imageAdapter.notifyDataSetChanged();
+                }
             } else {
-                if (data.getClipData() != null) {
-                    ClipData clipData = data.getClipData();
-                    for (int i = 0; i < clipData.getItemCount(); i++) {
-                        Uri uri = clipData.getItemAt(i).getUri();
-                        String selectedImagePath = FileUtils.getPath(MainActivity.this, uri);
-                        arrayPath.add(selectedImagePath);
-                        imageAdapter.notifyDataSetChanged();
-                    }
+                if (data.getData() != null) {
+                    Uri selectedImageUri = data.getData();
+                    String selectedImagePath = FileUtils.getPath(MainActivity.this, selectedImageUri);
+                    arrayPath.add(selectedImagePath);
+                    imageAdapter.notifyDataSetChanged();
+
                 }
             }
         } else if (requestCode == CAMERA_REQUEST && data != null) {
@@ -157,11 +159,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void getVersionFinish(String version) {
-        this.version=version;
+        this.version = version;
         Bundle bundle = new Bundle();
-        bundle.putString("version",version);
+        bundle.putString("version", version);
         downloadDialog.setArguments(bundle);
-        downloadDialog.show(getFragmentManager(),DownloadDialog.class.getName());
+        downloadDialog.show(getFragmentManager(), DownloadDialog.class.getName());
         downloadDialog.setOnClickListener(onClick);
     }
 
@@ -186,7 +188,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void modelUpdateFinish() {
-        editor.putString("version",version);
+        editor.putString("version", version);
         editor.commit();
         progressDialog.dismiss();
     }
@@ -196,21 +198,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         progressDialog.dismiss();
         showToast("下載失敗");
     }
-    private DownloadDialog.onClick onClick=new DownloadDialog.onClick() {
+
+    private DownloadDialog.onClick onClick = new DownloadDialog.onClick() {
         @Override
         public void onClick(View view) {
             downloadDialog.dismiss();
             Bundle bundle = new Bundle();
             bundle.putString("text", "下載中...");
             progressDialog.setArguments(bundle);
-            progressDialog.show(getFragmentManager(),ProgressDialog.class.getName());
+            progressDialog.show(getFragmentManager(), ProgressDialog.class.getName());
             myPresenter.getModel();
         }
     };
-    private void showToast(String msg){
-        if(toast==null){
-            toast=Toast.makeText(MainActivity.this,msg,Toast.LENGTH_SHORT);
-        }else{
+
+    private void showToast(String msg) {
+        if (toast == null) {
+            toast = Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT);
+        } else {
             toast.setText(msg);
         }
         toast.show();

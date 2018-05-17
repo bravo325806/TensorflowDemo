@@ -41,7 +41,10 @@ public class DownloadDialog extends DialogFragment implements View.OnClickListen
         super.onViewCreated(view, savedInstanceState);
         preferences=getActivity().getSharedPreferences("demo",0);
         currentVersion.setText(preferences.getString("version","0"));
-        this.setCancelable(false);
+        lastestVersion.setText(getArguments().getString("version"));
+        this.getDialog().setCanceledOnTouchOutside(true);
+        updateButton.setOnClickListener(this);
+        cancelButton.setOnClickListener(this);
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.example.cheng.tensorflowdemo.data;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -85,7 +86,7 @@ public class RemoteReponsitory {
                     HttpParams httpParams = new BasicHttpParams();
                     HttpConnectionParams.setConnectionTimeout(httpParams, 20000);
                     HttpClient httpClient = new DefaultHttpClient(httpParams);
-                    HttpPost postRequest = new HttpPost("http://10.21.20.38:5000/upload");
+                    HttpPost postRequest = new HttpPost("http://10.26.1.228:5000/upload");
                     MultipartEntity reqEntity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
                     try {
                         for (int i=0;i<file.size();i++){
@@ -119,7 +120,7 @@ public class RemoteReponsitory {
         }).start();
     }
     public void setTrainModelRequset(final String name){
-        String url = "http://10.21.20.38:5000/train";
+        String url = "http://10.26.1.228:5000/train";
         StringRequest stringRequest=new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -149,7 +150,7 @@ public class RemoteReponsitory {
             }
         };
         stringRequest.setRetryPolicy(new DefaultRetryPolicy(
-                20000,
+                2000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         queue.add(stringRequest);
@@ -159,14 +160,15 @@ public class RemoteReponsitory {
     }
 
     public void setGetpbModelRequset() {
-        String url = "http://10.21.20.38:5000/file";
+        String url = "http://10.26.1.228:5000/file";
         InputStreamVolleyRequest postRequest = new InputStreamVolleyRequest(Request.Method.GET, url,
                 new Response.Listener<byte[]>() {
                     @Override
                     public void onResponse(byte[] response)  {
                         try {
-                            FileOutputStream output = new FileOutputStream(context.getExternalFilesDir(null)+"/output_graph.pb");
+                            FileOutputStream output = new FileOutputStream(context.getExternalFilesDir(null)+"/output_graph.lite");
                             output.write(response);
+                            output.flush();
                             output.close();
                             getpbModel.onFinish();
                         } catch (FileNotFoundException e) {
@@ -192,7 +194,7 @@ public class RemoteReponsitory {
                 },null
         );
         postRequest.setRetryPolicy(new DefaultRetryPolicy(
-                20000,
+                30000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         queue.add(postRequest);
@@ -202,7 +204,7 @@ public class RemoteReponsitory {
     }
 
     public void setGetpbtxtRequset() {
-        String url = "http://10.21.20.38:5000/file1";
+        String url = "http://10.26.1.228:5000/file1";
         InputStreamVolleyRequest postRequest = new InputStreamVolleyRequest(Request.Method.GET, url,
                 new Response.Listener<byte[]>() {
                     @Override
@@ -210,6 +212,7 @@ public class RemoteReponsitory {
                         try {
                             FileOutputStream output = new FileOutputStream(context.getExternalFilesDir(null)+"/output_labels.txt");
                             output.write(response);
+                            output.flush();
                             output.close();
                             getpbtxt.onFinish();
                         } catch (FileNotFoundException e) {
@@ -244,7 +247,7 @@ public class RemoteReponsitory {
         this.getVersion=getVersion;
     }
     public void setGetTrainVersionRequset(){
-        String url = "10.21.20.11:5001/version";
+        String url = "http://10.26.1.228:5010/version";
         StringRequest stringRequest=new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -266,7 +269,7 @@ public class RemoteReponsitory {
             }
         });
         stringRequest.setRetryPolicy(new DefaultRetryPolicy(
-                20000,
+                3000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         queue.add(stringRequest);

@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.example.cheng.tensorflowdemo.R;
@@ -28,8 +29,9 @@ public class RecognitionActivity extends AppCompatActivity implements View.OnCli
     private final int REQUEST_CONTACTS = 111;
     private static final String TAG = RecognitionActivity.class.getName();
 //    private final String MODEL_FILE = "file:///android_asset/inception_v3_2016_08_28_frozen.pb";
-    private final String MODEL_FILE = "file:///android_asset/test.pb";
-    private final String INPUT_NODE = "Mul";
+    private final String MODEL_FILE = "inception.lite";
+    private final String LABEL_FILE = "output_labels.txt";
+    private final String INPUT_NODE = "Placeholder";
     private final String OUTPUT_NODE = "final_result";
     private final int INPUT_SIZE = 299;
 
@@ -40,6 +42,7 @@ public class RecognitionActivity extends AppCompatActivity implements View.OnCli
     private Button chooseImageButton;
     private String imagePath="";
     private RecognitionContract.Presenter presenter;
+    private TextView result;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,11 +59,12 @@ public class RecognitionActivity extends AppCompatActivity implements View.OnCli
         recognizeButton = findViewById(R.id.recognize_button);
         caremaButton = findViewById(R.id.carema_button);
         chooseImageButton = findViewById(R.id.choose_image_button);
+        result = findViewById(R.id.result);
         switchButton.setOnClickListener(this);
         recognizeButton.setOnClickListener(this);
         caremaButton.setOnClickListener(this);
         chooseImageButton.setOnClickListener(this);
-        presenter=new RecognitionPresenter(this,new TensorflowMobile(this,MODEL_FILE,INPUT_NODE,OUTPUT_NODE,INPUT_SIZE));
+        presenter=new RecognitionPresenter(this,new TensorflowMobile(this,MODEL_FILE,LABEL_FILE,INPUT_NODE,OUTPUT_NODE,INPUT_SIZE));
     }
 
     @Override
@@ -115,9 +119,12 @@ public class RecognitionActivity extends AppCompatActivity implements View.OnCli
 
     @Override
     public void getData(ArrayList<HashMap> result) {
+        String str="";
         for (int i=0;i<result.size();i++){
+            str+="label: "+result.get(i).get("label").toString()+"  "+"output: "+result.get(i).get("output")+"\n";
             Log.e(RecognitionActivity.class.getName()
                     ,"label:"+result.get(i).get("label").toString()+" output:"+result.get(i).get("output"));
         }
+        this.result.setText(str);
     }
 }
